@@ -1,7 +1,7 @@
-import { Option } from "./option.ts";
-import { some } from "./some.ts";
-import { none } from "./none.ts";
 import { IS_OPTION } from "./_constants.ts";
+import { Option } from "./_types.ts";
+import { none } from "./none.ts";
+import { some } from "./some.ts";
 
 export const maybe = <T>(predicate: (value: unknown) => value is T) =>
   (value: unknown): Option<T> => predicate(value) ? some(value) : none();

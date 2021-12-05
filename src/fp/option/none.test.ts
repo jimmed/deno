@@ -4,7 +4,7 @@ import {
   assertThrows,
 } from "https://deno.land/std/testing/asserts.ts";
 
-import { OptionIsNoneError } from "./option.ts";
+import { OptionIsNone } from "./_errors.ts";
 import { none } from "./none.ts";
 import { some } from "./some.ts";
 
@@ -13,11 +13,12 @@ Deno.test("isSome", () => assert(!none().isSome()));
 
 Deno.test("isNone", () => assert(none().isNone()));
 
-Deno.test("unwrap", () =>
-  assertThrows(() => none().unwrap(), OptionIsNoneError));
+Deno.test("unwrap", () => assertThrows(() => none().unwrap(), OptionIsNone));
 
 Deno.test("expectSome", () =>
-  assertThrows(() => none().expectSome("boom"), OptionIsNoneError, "boom"));
+  assertThrows(() => none().expectSome("boom"), OptionIsNone, "boom"));
+
+Deno.test("expectNone", () => none().expectNone());
 
 Deno.test("eq", () => {
   assert(none().eq(none()));

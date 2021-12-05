@@ -1,5 +1,6 @@
 import { IS_OPTION } from "./_constants.ts";
-import { FlattenOption, Option, OptionIsNoneError } from "./option.ts";
+import { OptionIsNone } from "./_errors.ts";
+import { FlattenOption, Option } from "./_types.ts";
 
 export class None<Value = unknown> implements Option<Value> {
   readonly [IS_OPTION] = true;
@@ -21,11 +22,13 @@ export class None<Value = unknown> implements Option<Value> {
   }
 
   expectSome(errorMessage?: string): Value {
-    throw new OptionIsNoneError(errorMessage);
+    throw new OptionIsNone(errorMessage);
   }
 
+  expectNone(_errorMessage?: string) {}
+
   unwrap(): Value {
-    throw new OptionIsNoneError();
+    throw new OptionIsNone();
   }
 
   eq(other: Option<Value>, _compare?: (a: Value, b: Value) => boolean) {
@@ -57,4 +60,6 @@ export class None<Value = unknown> implements Option<Value> {
 }
 
 const SHARED_NONE = new None();
-export const none = <Value>(): None<Value> => SHARED_NONE as None<Value>;
+export function none<Value>(): None<Value> {
+  return SHARED_NONE as None<Value>;
+}

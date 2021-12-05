@@ -2,12 +2,6 @@ import { IS_OPTION } from "./_constants.ts";
 import { None } from "./none.ts";
 import { Some } from "./some.ts";
 
-export class OptionIsNoneError extends Error {
-  constructor(msg?: string | null) {
-    super(msg ?? "Expected an Option to be Some, but got None");
-  }
-}
-
 export type FlattenOption<T> = T extends Option<infer U> ? FlattenOption<U>
   : Option<T>;
 
@@ -19,14 +13,9 @@ export interface Option<Value> {
   flatten(): FlattenOption<Value>;
   unwrap(): Value;
   expectSome(errorMessage: string): Value;
+  expectNone(errorMessage: string): void;
   eq(other: Option<Value>, compare?: (a: Value, b: Value) => boolean): boolean;
   and<Other>(other: Option<Other>): Option<Other>;
   or<Other>(other: Option<Other>): Option<Other> | Option<Value>;
   otherwise(value: Value): Value;
-}
-
-export function isOption<Value = unknown>(
-  value: unknown,
-): value is Option<Value> {
-  return value != null && typeof value == "object" && IS_OPTION in value!;
 }

@@ -1,5 +1,6 @@
 import { IS_OPTION } from "./_constants.ts";
-import { FlattenOption, Option } from "./option.ts";
+import { OptionIsSome } from "./_errors.ts";
+import { FlattenOption, Option } from "./_types.ts";
 import { isOption } from "./util.ts";
 
 export class Some<Value> implements Option<Value> {
@@ -26,8 +27,12 @@ export class Some<Value> implements Option<Value> {
     return this.#value;
   }
 
-  expectSome(_errorMsg: string) {
+  expectSome(_errorMessage?: string) {
     return this.#value;
+  }
+
+  expectNone(errorMessage?: string) {
+    throw new OptionIsSome(this.#value, errorMessage);
   }
 
   flatten(): FlattenOption<Value> {
@@ -68,4 +73,6 @@ export class Some<Value> implements Option<Value> {
   }
 }
 
-export const some = <Value>(value: Value) => new Some(value);
+export function some<Value>(value: Value) {
+  return new Some(value);
+}

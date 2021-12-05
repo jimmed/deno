@@ -1,4 +1,9 @@
-import { assert, assertEquals } from "https://deno.land/std/testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std/testing/asserts.ts";
+import { OptionIsSome } from "./_errors.ts";
 import { none } from "./none.ts";
 import { some } from "./some.ts";
 
@@ -18,6 +23,10 @@ Deno.test("unwrap", () => {
 Deno.test("expectSome", () => {
   const value = {};
   assertEquals(some(value).expectSome("boom"), value);
+});
+
+Deno.test("expectNone", () => {
+  assertThrows(() => some(1).expectNone("boom"), OptionIsSome, `boom`);
 });
 
 Deno.test("eq", () => {
