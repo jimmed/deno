@@ -1,22 +1,14 @@
 name: Setup deno
 description: Sets up deno and installs dependencies
 inputs:
+  version:
+    description: The version of deno to install
+    required: false
+    default: v1.x
   entrypoint:
     description: The TypeScript entrypoint path
     required: false
     default: ./src/mod.ts
-  install-path:
-    description: The path to install deno
-    required: false
-    default: ~/.deno
-  cache-path:
-    description: The path to the deno cache
-    required: false
-    default: ~/.cache/deno
-  install-url:
-    description: The deno install script URL
-    required: false
-    default: https://deno.land/x/install/install.sh
   cache-lock:
     description: The cache lockfile to use
     required: false
@@ -25,27 +17,22 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: cache deno installation and dependencies
+    - name: setup deno
+      id: setup
+      uses: denoland/setup-deno@v1
+      with:
+        deno-version: ${{ inputs.version }}
+
+    - name: cache deno dependencies
       uses: actions/cache@v2
       with:
-        key: ${{ runner.os }}-deno-${{ hashFiles('src/**/*') }}
-        restore-keys: ${{ runner.os }}-deno-
+        key: |
+          ${{ runner.os }}-deno-${{ steps.setup.outputs.deno-version }}-${{ hashFiles('src/**/*') }}
+        restore-keys: |
+          ${{ runner.os }}-deno-${{ steps.setup.outputs.deno-version }}-
+          ${{ runner.os }}-deno-
         path: |
-          ${{ inputs.install-path }}
           ${{ inputs.cache-path }}/deps/https
-
-    - name: install or update deno installation
-      shell: bash
-      run: |
-        export PATH="${{ inputs.install-path }}/bin:${PATH}"
-        mkdir -p "${{ inputs.install-path }}"
-        set +o pipefail
-        deno upgrade || (
-          curl -fsSL ${{ inputs.install-url }} > "${{ inputs.install-path }}/.sh";
-          sh "${{ inputs.install-path }}/.sh"
-        )
-        set -o pipefail
-        echo "${{ inputs.install-path }}/bin" >> $GITHUB_PATH
 
     - name: fetch any uncached dependencies
       shell: bash
