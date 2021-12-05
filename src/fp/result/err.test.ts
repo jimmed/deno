@@ -1,4 +1,7 @@
-import { assert, assertThrows } from "https://deno.land/std/testing/asserts.ts";
+import {
+  assert,
+  assertThrows,
+} from "https://deno.land/std@0.117.0/testing/asserts.ts";
 
 import { err } from "./err.ts";
 
