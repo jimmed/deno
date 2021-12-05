@@ -1,6 +1,4 @@
-import { assert } from "https://deno.land/std@0.117.0/testing/asserts.ts";
-import fc from "https://cdn.skypack.dev/fast-check?dts";
-
+import { assert, fc } from "../../dev_deps.ts";
 import { none } from "./none.ts";
 import { some } from "./some.ts";
 import { isOption, maybeFalsy, maybeNullish } from "./util.ts";
