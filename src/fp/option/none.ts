@@ -1,6 +1,9 @@
-import { Option, FlattenOption, OptionIsNoneError } from "./option.ts";
+import { IS_OPTION } from "./_constants.ts";
+import { FlattenOption, Option, OptionIsNoneError } from "./option.ts";
 
-export class None<Value = unknown> extends Option<Value> {
+export class None<Value = unknown> implements Option<Value> {
+  readonly [IS_OPTION] = true;
+
   map<U>(): Option<U> {
     return this as unknown as Option<U>;
   }
@@ -29,6 +32,13 @@ export class None<Value = unknown> extends Option<Value> {
     return other.isNone();
   }
 
+  neq(
+    other: Option<Value>,
+    _compare: (a: Value, b: Value) => boolean = Object.is,
+  ): boolean {
+    return !other.isNone();
+  }
+
   and<Other>(_other: Option<Other>) {
     return this as unknown as Option<Other>;
   }
@@ -45,3 +55,6 @@ export class None<Value = unknown> extends Option<Value> {
     return "None";
   }
 }
+
+const SHARED_NONE = new None();
+export const none = <Value>(): None<Value> => SHARED_NONE as None<Value>;

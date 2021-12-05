@@ -1,5 +1,6 @@
 import { assert, assertEquals } from "https://deno.land/std/testing/asserts.ts";
-import { none, some } from "./mod.ts";
+import { none } from "./none.ts";
+import { some } from "./some.ts";
 
 Deno.test("isSome", () => {
   assert(some(undefined).isSome());
@@ -47,7 +48,7 @@ Deno.test("flatten", () => {
     some(some(some("value")))
       .flatten()
       .unwrap(),
-    "value"
+    "value",
   );
 });
 

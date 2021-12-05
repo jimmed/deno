@@ -1,9 +1,12 @@
-import { Option, FlattenOption } from "./option.ts";
+import { IS_OPTION } from "./_constants.ts";
+import { FlattenOption, Option } from "./option.ts";
+import { isOption } from "./util.ts";
 
-export class Some<Value> extends Option<Value> {
+export class Some<Value> implements Option<Value> {
+  readonly [IS_OPTION] = true;
+
   #value: Value;
   constructor(value: Value) {
-    super();
     this.#value = value;
   }
 
@@ -28,7 +31,7 @@ export class Some<Value> extends Option<Value> {
   }
 
   flatten(): FlattenOption<Value> {
-    if (this.#value instanceof Option) {
+    if (isOption(this.#value)) {
       return this.#value.flatten() as FlattenOption<Value>;
     }
     return this as unknown as FlattenOption<Value>;
@@ -36,9 +39,16 @@ export class Some<Value> extends Option<Value> {
 
   eq(
     other: Option<Value>,
-    compare: (a: Value, b: Value) => boolean = Object.is
+    compare: (a: Value, b: Value) => boolean = Object.is,
   ): boolean {
     return other.isSome() && compare(this.unwrap(), other.unwrap());
+  }
+
+  neq(
+    other: Option<Value>,
+    compare: (a: Value, b: Value) => boolean = Object.is,
+  ): boolean {
+    return other.isNone() || !compare(this.unwrap(), other.unwrap());
   }
 
   and<Other>(other: Option<Other>) {
@@ -57,3 +67,5 @@ export class Some<Value> extends Option<Value> {
     return `Some { ${this.#value} }`;
   }
 }
+
+export const some = <Value>(value: Value) => new Some(value);

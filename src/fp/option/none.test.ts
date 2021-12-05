@@ -5,7 +5,8 @@ import {
 } from "https://deno.land/std/testing/asserts.ts";
 
 import { OptionIsNoneError } from "./option.ts";
-import { none, some } from "./mod.ts";
+import { none } from "./none.ts";
+import { some } from "./some.ts";
 
 const value = Symbol("test value");
 Deno.test("isSome", () => assert(!none().isSome()));
@@ -13,12 +14,10 @@ Deno.test("isSome", () => assert(!none().isSome()));
 Deno.test("isNone", () => assert(none().isNone()));
 
 Deno.test("unwrap", () =>
-  assertThrows(() => none().unwrap(), OptionIsNoneError)
-);
+  assertThrows(() => none().unwrap(), OptionIsNoneError));
 
 Deno.test("expectSome", () =>
-  assertThrows(() => none().expectSome("boom"), OptionIsNoneError, "boom")
-);
+  assertThrows(() => none().expectSome("boom"), OptionIsNoneError, "boom"));
 
 Deno.test("eq", () => {
   assert(none().eq(none()));
