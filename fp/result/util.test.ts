@@ -1,9 +1,4 @@
-import {
-  assertEquals,
-  assertRejects,
-  assertThrows,
-} from "https://deno.land/std@0.117.0/testing/asserts.ts";
-
+import { assertEquals, assertRejects, assertThrows } from "../../dev_deps.ts";
 import { maybeRejects, maybeThrows } from "./util.ts";
 
 Deno.test("maybeThrows", () => {

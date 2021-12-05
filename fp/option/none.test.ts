@@ -1,9 +1,4 @@
-import {
-  assert,
-  assertEquals,
-  assertThrows,
-} from "https://deno.land/std@0.117.0/testing/asserts.ts";
-
+import { assert, assertEquals, assertThrows } from "../../dev_deps.ts";
 import { OptionIsNone } from "./_errors.ts";
 import { none } from "./none.ts";
 import { some } from "./some.ts";
