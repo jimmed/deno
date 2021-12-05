@@ -1,0 +1,61 @@
+name: Setup deno
+description: Sets up deno and installs dependencies
+inputs:
+  entrypoint:
+    description: The TypeScript entrypoint path
+    required: false
+    default: ./src/mod.ts
+  install-path:
+    description: The path to install deno
+    required: false
+    default: ~/.deno
+  cache-path:
+    description: The path to the deno cache
+    required: false
+    default: ~/.cache/deno
+  install-url:
+    description: The deno install script URL
+    required: false
+    default: https://deno.land/x/install/install.sh
+  cache-lock:
+    description: The cache lockfile to use
+    required: false
+    default: lock.json
+
+runs:
+  using: composite
+  steps:
+    - name: cache deno installation and dependencies
+      uses: actions/cache@v2
+      with:
+        key: ${{ runner.os }}-deno-${{ hashFiles('src/**/*') }}
+        restore-keys: ${{ runner.os }}-deno-
+        path: |
+          ${{ inputs.install-path }}
+          ${{ inputs.cache-path }}/deps/https
+
+    - name: install or update deno installation
+      shell: bash
+      run: |
+        export PATH="${{ inputs.install-path }}/bin:${PATH}"
+        mkdir -p "${{ inputs.install-path }}"
+        set +o pipefail
+        deno upgrade || (
+          curl -fsSL ${{ inputs.install-url }} > "${{ inputs.install-path }}/.sh";
+          sh "${{ inputs.install-path }}/.sh"
+        )
+        set -o pipefail
+        echo "${{ inputs.install-path }}/bin" >> $GITHUB_PATH
+
+    - name: fetch any uncached dependencies
+      shell: bash
+      run: |
+        deno cache --reload=file: ${{ inputs.entrypoint }}
+
+    - name: check lockfile
+      shell: bash
+      run: |
+        if [[ -f ${{ inputs.cache-lock }} ]]; then
+          deno cache --lock=${{ inputs.cache-lock }} --cached-only ${{ inputs.entrypoint }}
+        fi
+        deno cache --lock-write --lock=${{ inputs.cache-lock }} ${{ inputs.entrypoint }}

@@ -1,0 +1,62 @@
+name: Unit tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.ref }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  deno-entrypoint: ./src/mod.ts
+
+jobs:
+  setup-deno:
+    name: setup deno
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v2
+      - name: setup deno
+        uses: ./.github/actions/deno
+
+  formatting:
+    name: check source code formatting
+    needs: [setup-deno]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v2
+      - name: setup deno
+        uses: ./.github/actions/deno
+
+  linting:
+    name: lint source code
+    needs: [setup-deno]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v2
+      - name: setup deno
+        uses: ./.github/actions/deno
+      - name: lint source code
+        run: deno lint
+
+  unit-tests:
+    name: unit tests
+    needs: [setup-deno]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v2
+      - name: setup deno
+        uses: ./.github/actions/deno
+      - name: run unit tests
+        run: deno test
