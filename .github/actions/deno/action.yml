@@ -8,7 +8,7 @@ inputs:
   entrypoint:
     description: The TypeScript entrypoint path
     required: false
-    default: ./src/mod.ts
+    default: ./mod.ts
   cache-lock:
     description: The cache lockfile to use
     required: false
@@ -27,7 +27,7 @@ runs:
       uses: actions/cache@v2
       with:
         key: |
-          ${{ runner.os }}-deno-${{ steps.setup.outputs.deno-version }}-${{ hashFiles('src/**/*') }}
+          ${{ runner.os }}-deno-${{ steps.setup.outputs.deno-version }}-${{ hashFiles('**/*.ts') }}
         restore-keys: |
           ${{ runner.os }}-deno-${{ steps.setup.outputs.deno-version }}-
           ${{ runner.os }}-deno-
