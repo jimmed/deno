@@ -8,6 +8,13 @@
   },
   "editor.defaultFormatter": "denoland.vscode-deno",
   "editor.formatOnSave": true,
+  "files.exclude": {
+    ".direnv": true,
+    ".vscode": true,
+    ".envrc": true,
+    ".editorconfig": true,
+    "flake.lock": true
+  },
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
