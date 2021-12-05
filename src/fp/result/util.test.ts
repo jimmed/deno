@@ -2,7 +2,7 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "https://deno.land/std/testing/asserts.ts";
+} from "https://deno.land/std@0.117.0/testing/asserts.ts";
 
 import { maybeRejects, maybeThrows } from "./util.ts";
 

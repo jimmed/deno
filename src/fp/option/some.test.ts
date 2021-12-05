@@ -2,7 +2,7 @@ import {
   assert,
   assertEquals,
   assertThrows,
-} from "https://deno.land/std/testing/asserts.ts";
+} from "https://deno.land/std@0.117.0/testing/asserts.ts";
 import { OptionIsSome } from "./_errors.ts";
 import { none } from "./none.ts";
 import { some } from "./some.ts";
