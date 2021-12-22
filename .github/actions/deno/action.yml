@@ -46,4 +46,3 @@ runs:
           deno cache --lock=${{ inputs.cache-lock }} --cached-only ${{ inputs.entrypoint }}
         fi
         deno cache --lock-write --lock=${{ inputs.cache-lock }} ${{ inputs.entrypoint }}
-        echo >> ${{ inputs.cache-lock }}
