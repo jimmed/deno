@@ -2,5 +2,5 @@
 with pkgs;
 mkShell {
   buildInputs = [ deno git github-cli nixfmt ];
-  shellHook = "deno cache {mod,dev_deps}.ts";
+  shellHook = "deno cache {mod,deps,dev_deps}.ts";
 }

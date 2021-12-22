@@ -8,7 +8,7 @@ inputs:
   entrypoint:
     description: The TypeScript entrypoint path
     required: false
-    default: ./mod.ts
+    default: ./{mod,deps,dev_deps}.ts
   cache-lock:
     description: The cache lockfile to use
     required: false
