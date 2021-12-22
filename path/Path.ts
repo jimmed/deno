@@ -6,6 +6,7 @@ export class Path implements path.ParsedPath {
   #asObject: path.ParsedPath | null = null;
 
   static from(pathInput: PathInput) {
+    if (pathInput instanceof this) return pathInput;
     return new this(pathInput);
   }
 
@@ -114,5 +115,9 @@ export class Path implements path.ParsedPath {
     return new Path(
       path.relative(this.toString(), new Path(otherPath).toString()),
     );
+  }
+
+  async realPath() {
+    return new Path(await Deno.realPath(this.toString()));
   }
 }
