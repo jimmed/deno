@@ -1,9 +1,9 @@
-import { File, WriteAsTextOptions } from "./File.ts";
+import { ReadAsTextOptions, TextFile, WriteAsTextOptions } from "./TextFile.ts";
 
-export class JsonFile<T> extends File {
-  async readAsJSON() {
+export class JsonFile<T> extends TextFile {
+  async readAsJSON(options?: ReadAsTextOptions) {
     return JSON.parse(
-      await this.readAsText().reduce((acc, chunk) => acc + chunk, ""),
+      await this.readAsText(options).reduce((acc, chunk) => acc + chunk, ""),
     );
   }
 
