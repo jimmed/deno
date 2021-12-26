@@ -54,7 +54,7 @@ export class AsyncIter<T> implements AI<T> {
     return this.pipe(async function* (self) {
       let skipped = 0;
       for await (const item of self) {
-        if (++skipped < toSkip) continue;
+        if (++skipped <= toSkip) continue;
         yield item;
       }
     });
