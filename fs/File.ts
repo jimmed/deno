@@ -1,8 +1,8 @@
 import { Node } from "./Node.ts";
 import { Directory } from "./Directory.ts";
 import { AsyncIter } from "../async-iter/AsyncIter.ts";
+import { fromReader } from "../async-iter/combinator/fromReader.ts";
 import { NodeInput } from "./_types.ts";
-import { streams } from "../deps.ts";
 
 export interface ReadAsBinaryOptions
   extends Omit<Deno.OpenOptions, "read" | "write"> {
@@ -33,10 +33,11 @@ export class File extends Node {
   }
 
   readAsBinary({ bufSize, ...options }: ReadAsBinaryOptions = {}) {
-    const getReader = async () => {
-      const file = await this.open({ ...options, read: true });
-      return streams.iterateReader(file, { bufSize });
-    };
+    const getReader = async () =>
+      fromReader(await this.open({ ...options, read: true }), {
+        bufSize,
+      });
+
     return new AsyncIter(async function* () {
       yield* await getReader();
     });

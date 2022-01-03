@@ -1,5 +1,5 @@
 import { Node } from "./Node.ts";
-import { from } from "../async-iter/mod.ts";
+import { from } from "../async-iter/combinator/from.ts";
 import { fs } from "../deps.ts";
 
 export class Directory extends Node implements AsyncIterable<fs.WalkEntry> {

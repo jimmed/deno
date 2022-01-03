@@ -1,15 +1,17 @@
-import {
-  AI,
-  Async,
-  AsyncCallback,
-  AsyncPredicate,
-  AsyncReducer,
-  AsyncTransformer,
-} from "./_types.ts";
+import type { AI, AsyncOperator } from "./_types.ts";
+import { compose } from "./operator/compose.ts";
 
+/**
+ * A wrapper around a function that returns an AsyncIterable.
+ *
+ * It allows you to perform array-like operations on infinite, async series.
+ */
 export class AsyncIter<T> implements AI<T> {
   #self: () => AI<T>;
 
+  /**
+   * @param self A function that returns the underlying AsyncIterable
+   */
   constructor(self: () => AI<T>) {
     this.#self = self;
   }
@@ -18,136 +20,66 @@ export class AsyncIter<T> implements AI<T> {
     return this.#self()[Symbol.asyncIterator]();
   }
 
-  lift<U>(transform: (iter: AI<T>) => U): U {
+  public lift<U>(transform: (iter: AI<T>) => U): U {
     return transform(this.#self());
   }
 
-  pipe<U>(transform: AsyncTransformer<T, U>): AsyncIter<U> {
-    return this.lift((self) => new AsyncIter(() => transform(self)));
-  }
-
-  first(): Promise<T | void> {
-    return this.lift(async (self) => {
-      for await (const first of self) return first;
-    });
-  }
-
-  last(): Promise<T | void> {
-    return this.lift(async (self) => {
-      let last: T | void;
-      for await (last of self) continue;
-      return last;
-    });
-  }
-
-  take(toTake: number) {
-    return this.pipe(async function* (self) {
-      let taken = 0;
-      for await (const item of self) {
-        if (++taken > toTake) return;
-        yield item;
-      }
-    });
-  }
-
-  skip(toSkip: number) {
-    return this.pipe(async function* (self) {
-      let skipped = 0;
-      for await (const item of self) {
-        if (++skipped <= toSkip) continue;
-        yield item;
-      }
-    });
-  }
-
-  takeWhile<U extends T>(keep: AsyncPredicate<T, U>) {
-    return this.pipe(async function* (self) {
-      for await (const item of self) {
-        if (!await keep(item)) return;
-        yield item;
-      }
-    });
-  }
-
-  skipWhile<U extends T>(skip: AsyncPredicate<T, U>) {
-    return this.pipe(async function* (self) {
-      let skipping = true;
-      for await (const item of self) {
-        // deno-lint-ignore no-cond-assign
-        if (skipping &&= await skip(item)) continue;
-        yield item;
-      }
-    });
-  }
-
-  slice(skip: number, take: number) {
-    return this.skip(skip).take(take);
-  }
-
-  map<U>(transform: AsyncCallback<T, U>) {
-    return this.pipe(async function* (self) {
-      for await (const item of self) yield await transform(item);
-    });
-  }
-
-  filter<U extends T = T>(keep: AsyncPredicate<T, U>) {
-    return this.pipe(async function* (self) {
-      for await (const item of self) {
-        if (await keep(item)) yield item as Awaited<U>;
-      }
-    });
-  }
-
-  reduce<U>(reducer: AsyncReducer<T, U>, initialValue: U): Promise<U> {
-    return this.scan(reducer, initialValue).last() as Promise<U>;
-  }
-
-  get<K extends keyof T>(key: K) {
-    return this.map((item) => item[key]);
-  }
-
-  find<U extends T = T>(keep: AsyncPredicate<T, U>) {
-    return this.filter<U>(keep).first();
-  }
-
-  scan<U>(reducer: AsyncReducer<T, U>, initial: Async<U>): AsyncIter<U> {
-    return this.pipe(async function* (self) {
-      let acc = await initial;
-      for await (const item of self) yield (acc = await reducer(acc, item));
-    });
-  }
-
-  toArray(preallocateSize = 0) {
-    return this.reduce(
-      (items, item) => (items.push(item), items),
-      Array(preallocateSize),
+  public pipe<B>(ab: AsyncOperator<T, B>): AsyncIter<B>;
+  public pipe<B, C>(
+    ab: AsyncOperator<T, B>,
+    bc: AsyncOperator<B, C>,
+  ): AsyncIter<C>;
+  public pipe<B, C, D>(
+    ab: AsyncOperator<T, B>,
+    bc: AsyncOperator<B, C>,
+    cd: AsyncOperator<C, D>,
+  ): AsyncIter<D>;
+  public pipe<B, C, D, E>(
+    ab: AsyncOperator<T, B>,
+    bc: AsyncOperator<B, C>,
+    cd: AsyncOperator<C, D>,
+    de: AsyncOperator<D, E>,
+  ): AsyncIter<E>;
+  public pipe<B, C, D, E, F>(
+    ab: AsyncOperator<T, B>,
+    bc: AsyncOperator<B, C>,
+    cd: AsyncOperator<C, D>,
+    de: AsyncOperator<D, E>,
+    ef: AsyncOperator<E, F>,
+  ): AsyncIter<F>;
+  public pipe<B, C, D, E, F, G>(
+    ab: AsyncOperator<T, B>,
+    bc: AsyncOperator<B, C>,
+    cd: AsyncOperator<C, D>,
+    de: AsyncOperator<D, E>,
+    ef: AsyncOperator<E, F>,
+    fg: AsyncOperator<F, G>,
+  ): AsyncIter<G>;
+  public pipe<B, C, D, E, F, G, H>(
+    ab: AsyncOperator<T, B>,
+    bc: AsyncOperator<B, C>,
+    cd: AsyncOperator<C, D>,
+    de: AsyncOperator<D, E>,
+    ef: AsyncOperator<E, F>,
+    fg: AsyncOperator<F, G>,
+    gh: AsyncOperator<G, H>,
+  ): AsyncIter<H>;
+  public pipe<B, C, D, E, F, G, H, I>(
+    ab: AsyncOperator<T, B>,
+    bc: AsyncOperator<B, C>,
+    cd: AsyncOperator<C, D>,
+    de: AsyncOperator<D, E>,
+    ef: AsyncOperator<E, F>,
+    fg: AsyncOperator<F, G>,
+    gh: AsyncOperator<G, H>,
+    hi: AsyncOperator<H, I>,
+  ): AsyncIter<I>;
+  public pipe<B>(
+    ...args: [AsyncOperator<T, unknown>, ...AsyncOperator<unknown>[]]
+  ): AsyncIter<B> {
+    const transform = compose<T, AsyncIterable<B>>(
+      ...args as AsyncOperator<unknown>[],
     );
-  }
-
-  buffer(size: number): AsyncIter<T[]> {
-    return this.pipe(async function* (self) {
-      const buffer: T[] = [];
-      for await (const item of self) {
-        buffer.push(item);
-        if (buffer.length > size) buffer.shift();
-        if (buffer.length < size) continue;
-        yield buffer;
-      }
-      if (buffer.length < size) yield buffer;
-    });
-  }
-
-  chunk(size: number): AsyncIter<T[]> {
-    return this.pipe(async function* (self) {
-      let chunk: T[] = [];
-      for await (const item of self) {
-        chunk.push(item);
-        if (chunk.length === size) {
-          yield chunk;
-          chunk = [];
-        }
-      }
-      if (chunk.length) yield chunk;
-    });
+    return new AsyncIter(() => transform(this.#self()));
   }
 }

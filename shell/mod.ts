@@ -1,5 +1,7 @@
-import * as AsyncIter from "../async-iter/mod.ts";
-import { TextIter } from "../async-iter/TextIter.ts";
+import { merge } from "../async-iter/combinator/merge.ts";
+import { of } from "../async-iter/combinator/of.ts";
+import { fromReader } from "../async-iter/combinator/fromReader.ts";
+import { map } from "../async-iter/operator/map.ts";
 
 export type CommandInput = Omit<Deno.RunOptions, "stdout" | "stderr">;
 
@@ -20,15 +22,13 @@ export class Command {
   run(...extraArgs: string[]) {
     const process = this.spawn(...extraArgs);
 
-    const stdout = TextIter.fromReader(process.stdout!);
-    const stderr = TextIter.fromReader(process.stderr!);
+    const stdout = fromReader(process.stdout!);
+    const stderr = fromReader(process.stderr!);
 
-    const allOutput = AsyncIter.merge(
-      stdout.map((chunk) => ["stdout", chunk] as const),
-      stderr.map((chunk) => ["stderr", chunk] as const),
-      AsyncIter.of(
-        process.status().then((status) => ["exit", status] as const),
-      ),
+    const allOutput = merge(
+      stdout.pipe(map((chunk) => ["stdout", chunk] as const)),
+      stderr.pipe(map((chunk) => ["stderr", chunk] as const)),
+      of(process.status().then((status) => ["exit", status] as const)),
     );
 
     return {

@@ -1,5 +1,5 @@
 import { AsyncIter } from "../AsyncIter.ts";
-import { AI } from "../_types.ts";
+import type { AI } from "../_types.ts";
 
 /**
  * 'Zips' together multiple AsyncIterables, yielding an array of values

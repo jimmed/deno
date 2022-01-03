@@ -1,5 +1,8 @@
 import { from } from "../async-iter/mod.ts";
-import { TextIter } from "../async-iter/TextIter.ts";
+import { decodeText } from "../async-iter/operator/decodeText.ts";
+import { textToLines } from "../async-iter/operator/textToLines.ts";
+import { map } from "../async-iter/operator/map.ts";
+import { reduce } from "../async-iter/transformer/reduce.ts";
 import { File, ReadAsBinaryOptions } from "./File.ts";
 
 export interface ReadAsTextOptions extends ReadAsBinaryOptions {
@@ -14,13 +17,13 @@ export class TextFile extends File {
   readAsText(
     { decoder = new TextDecoder(), ...options }: ReadAsTextOptions = {},
   ) {
-    return new TextIter(() =>
-      this.readAsBinary(options).map((chunk) => decoder.decode(chunk))
-    );
+    return this.readAsBinary(options).pipe(decodeText(decoder));
   }
 
   readAllAsText(options?: ReadAsTextOptions) {
-    return this.readAsText(options).reduce((acc, chunk) => acc + chunk, "");
+    return this.readAsText(options).lift(
+      reduce((acc, chunk) => acc + chunk, ""),
+    );
   }
 
   writeAsText(
@@ -28,19 +31,22 @@ export class TextFile extends File {
     { encoder = new TextEncoder(), ...options }: WriteAsTextOptions = {},
   ) {
     return this.writeAsBinary(
-      from(content).map((chunk) => encoder.encode(chunk)),
+      from(content).lift(map((chunk) => encoder.encode(chunk))),
       options,
     );
   }
 
   readAsLines(options?: ReadAsTextOptions) {
-    return this.readAsText(options).toLines();
+    return this.readAsText(options).pipe(textToLines());
   }
 
   writeAsLines(
     content: AsyncIterable<string> | Iterable<string>,
     options?: WriteAsTextOptions,
   ) {
-    return this.writeAsText(from(content).map((line) => `${line}\n`), options);
+    return this.writeAsText(
+      from(content).pipe(map((line) => `${line}\n`)),
+      options,
+    );
   }
 }
