@@ -1,4 +1,4 @@
-import { forLoop } from "./for-loop.ts";
+import { loop } from "./loop.ts";
 
 export interface CountInput {
   min?: number;
@@ -7,7 +7,7 @@ export interface CountInput {
 }
 
 export function count({ min = 0, max = Infinity, step = 1 }: CountInput = {}) {
-  return forLoop({
+  return loop({
     initial: () => min,
     next: (i) => i + step,
     hasMore: (i) => i <= max,

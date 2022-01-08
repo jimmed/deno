@@ -8,12 +8,11 @@ import type { AsyncOperator, AsyncPredicate } from "../_types.ts";
  */
 export const skipWhile = <T, U extends T = T>(
   skip: AsyncPredicate<T, U>,
-): AsyncOperator<T, U> =>
+): AsyncOperator<T, T> =>
   async function* (iterable) {
     let skipping = true;
     for await (const item of iterable) {
-      // deno-lint-ignore no-cond-assign
-      if (skipping &&= await skip(item)) continue;
-      yield item as Awaited<U>;
+      if ((skipping &&= await skip(item))) continue;
+      yield item;
     }
   };
