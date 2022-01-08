@@ -1,5 +1,5 @@
 import type { Async, AsyncReducer, AsyncTransformer } from "../_types.ts";
-import { compose } from "./compose.ts";
+import { compose } from "../operator/compose.ts";
 import { scan } from "../operator/scan.ts";
 import { last } from "./last.ts";
 

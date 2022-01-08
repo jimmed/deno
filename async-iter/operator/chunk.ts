@@ -1,25 +1,27 @@
 import type { AsyncOperator } from "../_types.ts";
+export interface ChunkOptions {
+  yieldPartial?: boolean;
+}
 
 export const chunk = <T>(
-  chunkSize: number,
-  yieldLastChunkIfIncomplete = false,
+  size: number,
+  { yieldPartial = false }: ChunkOptions = {},
 ): AsyncOperator<T, T[]> => {
-  if (chunkSize < 1) {
+  if (size < 1) {
     throw new TypeError("Cannot have a buffer size of less than 1");
   }
 
   return async function* (iterable) {
-    let chunk: T[] = Array(chunkSize);
+    let chunk: T[] = Array(size);
     let index = 0;
     for await (const item of iterable) {
       chunk[index] = item;
-      if (index === chunkSize) {
+      if (++index === size) {
         yield chunk;
-        chunk = Array(chunkSize);
+        chunk = Array(size);
         index = 0;
       }
-      ++index;
     }
-    if (yieldLastChunkIfIncomplete && index > 1) yield chunk;
+    if (yieldPartial && index > 1) yield chunk;
   };
 };

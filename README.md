@@ -29,7 +29,7 @@ A monorepo full of [deno][deno] libraries and tools
    ```bash
    git clone git@github.com:jimmed/deno.git
    cd deno
-   deno cache {mod,dev_deps}.ts
+   deno cache {mod,{dev_,}deps}.ts
    ```
 
 [deno]: https://deno.land/

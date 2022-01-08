@@ -1,5 +1,5 @@
 import type { AsyncOperator } from "../_types.ts";
-import { compose } from "../transformer/compose.ts";
+import { compose } from "../operator/compose.ts";
 import { take } from "./take.ts";
 import { skip } from "./skip.ts";
 

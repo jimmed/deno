@@ -1,11 +1,12 @@
-import { AsyncIterInput } from "../_types.ts";
-import { AsyncIter } from "../AsyncIter.ts";
+import type { AsyncIterInput } from "../_types.ts";
 
 /**
- * Constructs a new `AsyncIter` from any `AsyncIterable` or `Iterable`.
+ * Creates an AsyncIterable that iterates over `values`
  */
-export function from<T>(values: AsyncIterInput<T>) {
-  return new AsyncIter(async function* () {
-    yield* await values;
-  });
+export function from<T>(values: AsyncIterInput<T>): AsyncIterable<T> {
+  return {
+    async *[Symbol.asyncIterator]() {
+      yield* await values;
+    },
+  };
 }
