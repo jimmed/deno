@@ -1,4 +1,5 @@
 import type { AsyncOperator } from "../_types.ts";
+
 export interface ChunkOptions {
   yieldPartial?: boolean;
 }

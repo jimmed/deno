@@ -1,4 +1,4 @@
-import { AsyncPredicate, AsyncTransformer } from "../_types.ts";
+import type { AsyncPredicate, AsyncTransformer } from "../_types.ts";
 
 export function every<T>(
   predicate: AsyncPredicate<T, T>,
