@@ -3,3 +3,4 @@ export * from "./generator/mod.ts";
 export * from "./operator/mod.ts";
 export * from "./transformer/mod.ts";
 export * from "./AsyncIter.ts";
+export * from "./wrap.ts";

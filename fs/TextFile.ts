@@ -1,7 +1,6 @@
-import { from } from "../async-iter/mod.ts";
+import { from, wrap } from "../async-iter/mod.ts";
 import { decodeText } from "../async-iter/operator/decodeText.ts";
 import { textToLines } from "../async-iter/operator/textToLines.ts";
-import { map } from "../async-iter/operator/map.ts";
 import { reduce } from "../async-iter/transformer/reduce.ts";
 import { File, ReadAsBinaryOptions } from "./File.ts";
 
@@ -14,9 +13,10 @@ export interface WriteAsTextOptions extends Deno.OpenOptions {
 }
 
 export class TextFile extends File {
-  readAsText(
-    { decoder = new TextDecoder(), ...options }: ReadAsTextOptions = {},
-  ) {
+  readAsText({
+    decoder = new TextDecoder(),
+    ...options
+  }: ReadAsTextOptions = {}) {
     return this.readAsBinary(options).pipe(decodeText(decoder));
   }
 
@@ -31,7 +31,9 @@ export class TextFile extends File {
     { encoder = new TextEncoder(), ...options }: WriteAsTextOptions = {},
   ) {
     return this.writeAsBinary(
-      from(content).lift(map((chunk) => encoder.encode(chunk))),
+      wrap(from(content)[Symbol.asyncIterator]).map((chunk) =>
+        encoder.encode(chunk)
+      ),
       options,
     );
   }
@@ -45,7 +47,7 @@ export class TextFile extends File {
     options?: WriteAsTextOptions,
   ) {
     return this.writeAsText(
-      from(content).pipe(map((line) => `${line}\n`)),
+      wrap(from(content)[Symbol.asyncIterator]).map((line) => `${line}\n`),
       options,
     );
   }

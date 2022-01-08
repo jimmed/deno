@@ -5,10 +5,10 @@ import type {
   AsyncReducer,
 } from "./_types.ts";
 import * as operators from "./operator/mod.ts";
+import * as transformers from "./transformer/mod.ts";
 
-type Ops = typeof operators;
-type OpName = keyof Ops;
-type Op<K extends OpName> = Ops[K];
+type OpName = keyof typeof operators;
+type TfName = keyof typeof transformers;
 
 export const wrap = <T>(source: () => AsyncIterator<T>) =>
   new Proxy({ [Symbol.asyncIterator]: source } as Wrapped<T>, {
@@ -17,10 +17,13 @@ export const wrap = <T>(source: () => AsyncIterator<T>) =>
         return (...args: unknown[]) =>
           wrap(() =>
             // deno-lint-ignore ban-types
-            (operators[p as OpName] as Function)(
-              ...(args as Parameters<Op<OpName>>)
-            )(source())
+            (operators[p as OpName] as Function)(...args)(source())
           );
+      }
+      if (p in transformers) {
+        return (...args: unknown[]) =>
+          // deno-lint-ignore ban-types
+          (transformers[p as TfName] as Function)(...args)(source());
       }
       return Reflect.get(t, p, r);
     },
@@ -45,10 +48,29 @@ export interface Wrapped<T> extends AsyncIterable<T> {
     : never;
   textToLines: T extends string ? () => Wrapped<string> : never;
   whenChanged(compare?: AsyncPredicate<T, T>): Wrapped<T>;
-  get: T extends Record<never, never>
-    ? <K extends keyof T>(key: K) => Wrapped<T[K]>
-    : never;
-  where: T extends Record<never, never>
-    ? <U extends T>(partialMatch: Partial<U>) => Wrapped<U>
-    : never;
+  get<K extends keyof T>(key: K): Wrapped<T[K]>;
+  where<U extends T>(partialMatch: Partial<U>): Wrapped<U>;
+  every(predicate: AsyncPredicate<T, T>): Promise<boolean>;
+  find<T, U extends T = T>(
+    match: AsyncPredicate<T, U>,
+    throwOnEmpty?: false,
+  ): Promise<U | void>;
+  find<T, U extends T = T>(
+    match: AsyncPredicate<T, U>,
+    throwOnEmpty: true,
+  ): Promise<U>;
+  forEach(callback: AsyncCallback<T, unknown>): Promise<void>;
+  groupBy<K>(getGroup: AsyncCallback<T, K>): Promise<Map<K, T[]>>;
+  groupByKey<K extends keyof T>(key: K): Promise<Map<K, T[]>>;
+  indexBy<K>(getIndex: AsyncCallback<T, K>): Promise<Map<K, T>>;
+  indexByKey<K extends keyof T>(key: K): Promise<Map<K, T>>;
+  first(throwOnEmpty?: false): Promise<T | void>;
+  first(throwOnEmpty: true): Promise<T>;
+  last(throwOnEmpty?: false): Promise<T | void>;
+  last(throwOnEmpty: true): Promise<T>;
+  reduce<U>(reducer: AsyncReducer<T, U>, initialValue: U): Promise<U>;
+  some(predicate: AsyncPredicate<T, T>): Promise<boolean>;
+  toArray(): Promise<T[]>;
+  toSet(): Promise<Set<T>>;
+  toMap: T extends [infer K, infer V] ? () => Promise<Map<K, V>> : never;
 }
