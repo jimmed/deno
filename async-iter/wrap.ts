@@ -3,6 +3,7 @@ import type {
   AsyncCallback,
   AsyncPredicate,
   AsyncReducer,
+  AsyncOperator,
 } from "./_types.ts";
 import * as operators from "./operator/mod.ts";
 import * as transformers from "./transformer/mod.ts";
@@ -13,7 +14,8 @@ type TfName = keyof typeof transformers;
 export const wrap = <T>(source: () => AsyncIterator<T>) =>
   new Proxy({ [Symbol.asyncIterator]: source } as Wrapped<T>, {
     get: (t, p, r) => {
-      if (p in operators && p !== "compose") {
+      if (p === "pipe") p = "compose";
+      if (p in operators) {
         return (...args: unknown[]) =>
           wrap(() =>
             // deno-lint-ignore ban-types
@@ -53,17 +55,17 @@ export interface Wrapped<T> extends AsyncIterable<T> {
   every(predicate: AsyncPredicate<T, T>): Promise<boolean>;
   find<T, U extends T = T>(
     match: AsyncPredicate<T, U>,
-    throwOnEmpty?: false,
+    throwOnEmpty?: false
   ): Promise<U | void>;
   find<T, U extends T = T>(
     match: AsyncPredicate<T, U>,
-    throwOnEmpty: true,
+    throwOnEmpty: true
   ): Promise<U>;
   forEach(callback: AsyncCallback<T, unknown>): Promise<void>;
   groupBy<K>(getGroup: AsyncCallback<T, K>): Promise<Map<K, T[]>>;
-  groupByKey<K extends keyof T>(key: K): Promise<Map<K, T[]>>;
+  groupByKey<K extends keyof T>(key: K): Promise<Map<T[K], T[]>>;
   indexBy<K>(getIndex: AsyncCallback<T, K>): Promise<Map<K, T>>;
-  indexByKey<K extends keyof T>(key: K): Promise<Map<K, T>>;
+  indexByKey<K extends keyof T>(key: K): Promise<Map<T[K], T>>;
   first(throwOnEmpty?: false): Promise<T | void>;
   first(throwOnEmpty: true): Promise<T>;
   last(throwOnEmpty?: false): Promise<T | void>;
@@ -73,4 +75,51 @@ export interface Wrapped<T> extends AsyncIterable<T> {
   toArray(): Promise<T[]>;
   toSet(): Promise<Set<T>>;
   toMap: T extends [infer K, infer V] ? () => Promise<Map<K, V>> : never;
+  pipe<B>(ab: AsyncOperator<T, B>): Wrapped<B>;
+  pipe<B, C>(ab: AsyncOperator<T, B>, bc: AsyncOperator<B, C>): Wrapped<C>;
+  pipe<B, C, D>(
+    ab: AsyncOperator<T, B>,
+    bc: AsyncOperator<B, C>,
+    cd: AsyncOperator<C, D>
+  ): Wrapped<D>;
+  pipe<B, C, D, E>(
+    ab: AsyncOperator<T, B>,
+    bc: AsyncOperator<B, C>,
+    cd: AsyncOperator<C, D>,
+    de: AsyncOperator<D, E>
+  ): Wrapped<E>;
+  pipe<B, C, D, E, F>(
+    ab: AsyncOperator<T, B>,
+    bc: AsyncOperator<B, C>,
+    cd: AsyncOperator<C, D>,
+    de: AsyncOperator<D, E>,
+    ef: AsyncOperator<E, F>
+  ): Wrapped<F>;
+  pipe<B, C, D, E, F, G>(
+    ab: AsyncOperator<T, B>,
+    bc: AsyncOperator<B, C>,
+    cd: AsyncOperator<C, D>,
+    de: AsyncOperator<D, E>,
+    ef: AsyncOperator<E, F>,
+    fg: AsyncOperator<F, G>
+  ): Wrapped<G>;
+  pipe<B, C, D, E, F, G, H>(
+    ab: AsyncOperator<T, B>,
+    bc: AsyncOperator<B, C>,
+    cd: AsyncOperator<C, D>,
+    de: AsyncOperator<D, E>,
+    ef: AsyncOperator<E, F>,
+    fg: AsyncOperator<F, G>,
+    gh: AsyncOperator<G, H>
+  ): Wrapped<H>;
+  pipe<B, C, D, E, F, G, H, I>(
+    ab: AsyncOperator<T, B>,
+    bc: AsyncOperator<B, C>,
+    cd: AsyncOperator<C, D>,
+    de: AsyncOperator<D, E>,
+    ef: AsyncOperator<E, F>,
+    fg: AsyncOperator<F, G>,
+    gh: AsyncOperator<G, H>,
+    hi: AsyncOperator<H, I>
+  ): Wrapped<I>;
 }
