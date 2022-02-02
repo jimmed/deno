@@ -1,6 +1,8 @@
 export * from "./buffer.ts";
 export * from "./chunk.ts";
 export * from "./compose.ts";
+export * from "./decodeText.ts";
+export * from "./exhaust.ts";
 export * from "./filter.ts";
 export * from "./get.ts";
 export * from "./map.ts";
@@ -15,4 +17,3 @@ export * from "./tap.ts";
 export * from "./textToLines.ts";
 export * from "./whenChanged.ts";
 export * from "./where.ts";
-export * from "./decodeText.ts";

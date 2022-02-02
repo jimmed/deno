@@ -1,6 +1,5 @@
 import { Async } from "../_types.ts";
 import { from } from "./from.ts";
-import { AsyncIter } from "../AsyncIter.ts";
 
 /**
  * Constructs an `AsyncIter` from zero or more values passed as arguments.
@@ -36,7 +35,7 @@ import { AsyncIter } from "../AsyncIter.ts";
  * ```
  */
 export function of(): never;
-export function of<T>(...values: Async<T>[]): AsyncIter<T>;
+export function of<T>(...values: Async<T>[]): AsyncIterable<T>;
 export function of<T>(...values: Async<T>[]) {
   return from(values);
 }

@@ -11,27 +11,45 @@ import * as transformers from "./transformer/mod.ts";
 type OpName = keyof typeof operators;
 type TfName = keyof typeof transformers;
 
-export const wrap = <T>(source: () => AsyncIterator<T>) =>
-  new Proxy({ [Symbol.asyncIterator]: source } as Wrapped<T>, {
-    get: (t, p, r) => {
-      if (p === "pipe") p = "compose";
-      if (p in operators) {
-        return (...args: unknown[]) =>
-          wrap(() =>
+export const asAsyncIterable = <T>(
+  source: AsyncIterable<T> | (() => AsyncIterator<T>)
+): AsyncIterable<T> =>
+  typeof source === "function" ? { [Symbol.asyncIterator]: source } : source;
+
+export const iterateAsync = <T>(source: AsyncIterable<T>) =>
+  source[Symbol.asyncIterator]();
+
+export const wrap = <T>(
+  source: AsyncIterable<T> | (() => AsyncIterator<T>)
+) => {
+  const run = () => iterateAsync(asAsyncIterable(source));
+  return new Proxy(
+    (Symbol.asyncIterator in source
+      ? source
+      : { [Symbol.asyncIterator]: source }) as Wrapped<T>,
+    {
+      get: (t, p, r) => {
+        if (p === "pipe") p = "compose";
+        if (p in operators) {
+          return (...args: unknown[]) =>
+            wrap(() =>
+              // deno-lint-ignore ban-types
+              (operators[p as OpName] as Function)(...args)(run())
+            );
+        }
+        if (p in transformers) {
+          return (...args: unknown[]) =>
             // deno-lint-ignore ban-types
-            (operators[p as OpName] as Function)(...args)(source())
-          );
-      }
-      if (p in transformers) {
-        return (...args: unknown[]) =>
-          // deno-lint-ignore ban-types
-          (transformers[p as TfName] as Function)(...args)(source());
-      }
-      return Reflect.get(t, p, r);
-    },
-  });
+            (transformers[p as TfName] as Function)(...args)(run());
+        }
+        return Reflect.get(t, p, r);
+      },
+    }
+  );
+};
 
 export interface Wrapped<T> extends AsyncIterable<T> {
+  exhaust(): Wrapped<never>;
   buffer(size: number, opts?: operators.BufferOptions): Wrapped<T[]>;
   chunk(size: number, opts?: operators.ChunkOptions): Wrapped<T[]>;
   filter<U extends T = T>(keep: AsyncPredicate<T, U>): Wrapped<U>;
@@ -53,11 +71,11 @@ export interface Wrapped<T> extends AsyncIterable<T> {
   get<K extends keyof T>(key: K): Wrapped<T[K]>;
   where<U extends T>(partialMatch: Partial<U>): Wrapped<U>;
   every(predicate: AsyncPredicate<T, T>): Promise<boolean>;
-  find<T, U extends T = T>(
+  find<U extends T = T>(
     match: AsyncPredicate<T, U>,
     throwOnEmpty?: false
   ): Promise<U | void>;
-  find<T, U extends T = T>(
+  find<U extends T = T>(
     match: AsyncPredicate<T, U>,
     throwOnEmpty: true
   ): Promise<U>;
