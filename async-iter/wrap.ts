@@ -1,9 +1,9 @@
 import type {
   Async,
   AsyncCallback,
+  AsyncOperator,
   AsyncPredicate,
   AsyncReducer,
-  AsyncOperator,
 } from "./_types.ts";
 import * as operators from "./operator/mod.ts";
 import * as transformers from "./transformer/mod.ts";
@@ -12,7 +12,7 @@ type OpName = keyof typeof operators;
 type TfName = keyof typeof transformers;
 
 export const asAsyncIterable = <T>(
-  source: AsyncIterable<T> | (() => AsyncIterator<T>)
+  source: AsyncIterable<T> | (() => AsyncIterator<T>),
 ): AsyncIterable<T> =>
   typeof source === "function" ? { [Symbol.asyncIterator]: source } : source;
 
@@ -20,7 +20,7 @@ export const iterateAsync = <T>(source: AsyncIterable<T>) =>
   source[Symbol.asyncIterator]();
 
 export const wrap = <T>(
-  source: AsyncIterable<T> | (() => AsyncIterator<T>)
+  source: AsyncIterable<T> | (() => AsyncIterator<T>),
 ) => {
   const run = () => iterateAsync(asAsyncIterable(source));
   return new Proxy(
@@ -44,7 +44,7 @@ export const wrap = <T>(
         }
         return Reflect.get(t, p, r);
       },
-    }
+    },
   );
 };
 
@@ -73,11 +73,11 @@ export interface Wrapped<T> extends AsyncIterable<T> {
   every(predicate: AsyncPredicate<T, T>): Promise<boolean>;
   find<U extends T = T>(
     match: AsyncPredicate<T, U>,
-    throwOnEmpty?: false
+    throwOnEmpty?: false,
   ): Promise<U | void>;
   find<U extends T = T>(
     match: AsyncPredicate<T, U>,
-    throwOnEmpty: true
+    throwOnEmpty: true,
   ): Promise<U>;
   forEach(callback: AsyncCallback<T, unknown>): Promise<void>;
   groupBy<K>(getGroup: AsyncCallback<T, K>): Promise<Map<K, T[]>>;
@@ -98,20 +98,20 @@ export interface Wrapped<T> extends AsyncIterable<T> {
   pipe<B, C, D>(
     ab: AsyncOperator<T, B>,
     bc: AsyncOperator<B, C>,
-    cd: AsyncOperator<C, D>
+    cd: AsyncOperator<C, D>,
   ): Wrapped<D>;
   pipe<B, C, D, E>(
     ab: AsyncOperator<T, B>,
     bc: AsyncOperator<B, C>,
     cd: AsyncOperator<C, D>,
-    de: AsyncOperator<D, E>
+    de: AsyncOperator<D, E>,
   ): Wrapped<E>;
   pipe<B, C, D, E, F>(
     ab: AsyncOperator<T, B>,
     bc: AsyncOperator<B, C>,
     cd: AsyncOperator<C, D>,
     de: AsyncOperator<D, E>,
-    ef: AsyncOperator<E, F>
+    ef: AsyncOperator<E, F>,
   ): Wrapped<F>;
   pipe<B, C, D, E, F, G>(
     ab: AsyncOperator<T, B>,
@@ -119,7 +119,7 @@ export interface Wrapped<T> extends AsyncIterable<T> {
     cd: AsyncOperator<C, D>,
     de: AsyncOperator<D, E>,
     ef: AsyncOperator<E, F>,
-    fg: AsyncOperator<F, G>
+    fg: AsyncOperator<F, G>,
   ): Wrapped<G>;
   pipe<B, C, D, E, F, G, H>(
     ab: AsyncOperator<T, B>,
@@ -128,7 +128,7 @@ export interface Wrapped<T> extends AsyncIterable<T> {
     de: AsyncOperator<D, E>,
     ef: AsyncOperator<E, F>,
     fg: AsyncOperator<F, G>,
-    gh: AsyncOperator<G, H>
+    gh: AsyncOperator<G, H>,
   ): Wrapped<H>;
   pipe<B, C, D, E, F, G, H, I>(
     ab: AsyncOperator<T, B>,
@@ -138,6 +138,6 @@ export interface Wrapped<T> extends AsyncIterable<T> {
     ef: AsyncOperator<E, F>,
     fg: AsyncOperator<F, G>,
     gh: AsyncOperator<G, H>,
-    hi: AsyncOperator<H, I>
+    hi: AsyncOperator<H, I>,
   ): Wrapped<I>;
 }

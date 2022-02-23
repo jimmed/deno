@@ -14,10 +14,8 @@ Deno.test("generator fn", async () =>
         yield* values;
       })
       .reduce((a, b) => a + b, 0),
-    20
-  )
-);
+    20,
+  ));
 
 Deno.test("iterable", async () =>
-  assertEquals(await wrap(of(1, 2, 3)).last(), 3)
-);
+  assertEquals(await wrap(of(1, 2, 3)).last(), 3));
